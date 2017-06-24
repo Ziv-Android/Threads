@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">Threads</string>
+    <string name="menu_setting">Setting</string>
+    <string name="title_activity_main">Threads</string>
+    <string name="threads_edit">Thread Count</string>
+    <string name="iterations_edit">Iteration Count</string>
+    <string name="start_button">Start Threads</string>
+</resources>
