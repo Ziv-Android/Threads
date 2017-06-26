@@ -13,12 +13,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private Button startBtn;
     private TextView logView;
 
+    private LibraryAPI sdk;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        nativeInit();
+        sdk = new LibraryAPI();
+        sdk.nativeInit();
 
         viewInit();
     }
@@ -38,7 +41,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         int iterations = getNumber(iterationsEdit, 0);
 
         if (threads > 0 && iterations > 0) {
-            startThreads(threads, iterations);
+//            startThreads(threads, iterations);
+            sdk.posixThreads(threads, iterations);
         }
     }
 
@@ -63,7 +67,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             Thread thread = new Thread() {
                 @Override
                 public void run() {
-                    nativeWorker(id, iterations);
+                    sdk.nativeWorker(id, iterations);
                 }
             };
             thread.start();
@@ -72,17 +76,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     @Override
     protected void onDestroy() {
-        nativeFree();
+        sdk.nativeFree();
 
         super.onDestroy();
-    }
-
-    private native void nativeInit();
-    private native void nativeFree();
-    private native void nativeWorker(int id, int iterations);
-
-    static {
-        System.loadLibrary("Threads");
     }
 
     private void onNativeMessage(final String message) {

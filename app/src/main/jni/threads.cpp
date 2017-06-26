@@ -1,5 +1,6 @@
-#include <threads.h>
+#include <com_ziv_threads_LibraryAPI.h>
 #include "include/jni_log_util.h"
+
 #include <stdio.h>
 #include <unistd.h>
 
@@ -9,11 +10,11 @@
 static jmethodID nativeMessageMethod = NULL;
 
 /*
- * Class:     com_ziv_threads_MainActivity
+ * Class:     com_ziv_threads_LibraryAPI
  * Method:    nativeInit
  * Signature: ()V
  */
-JNIEXPORT void JNICALL Java_com_ziv_threads_MainActivity_nativeInit
+JNIEXPORT void JNICALL Java_com_ziv_threads_LibraryAPI_nativeInit
         (JNIEnv *env, jobject obj) {
     if (NULL == nativeMessageMethod) {
         jclass clazz = env->GetObjectClass(obj);
@@ -28,21 +29,21 @@ JNIEXPORT void JNICALL Java_com_ziv_threads_MainActivity_nativeInit
 }
 
 /*
- * Class:     com_ziv_threads_MainActivity
+ * Class:     com_ziv_threads_LibraryAPI
  * Method:    nativeFree
  * Signature: ()V
  */
-JNIEXPORT void JNICALL Java_com_ziv_threads_MainActivity_nativeFree
+JNIEXPORT void JNICALL Java_com_ziv_threads_LibraryAPI_nativeFree
         (JNIEnv *, jobject){
 
 }
 
 /*
- * Class:     com_ziv_threads_MainActivity
+ * Class:     com_ziv_threads_LibraryAPI
  * Method:    nativeWorker
  * Signature: (II)V
  */
-JNIEXPORT void JNICALL Java_com_ziv_threads_MainActivity_nativeWorker
+JNIEXPORT void JNICALL Java_com_ziv_threads_LibraryAPI_nativeWorker
         (JNIEnv *env, jobject obj, jint id, jint iterations){
     for (int i = 0; i < iterations; ++i) {
         // 准备消息
