@@ -123,20 +123,43 @@ static void *nativeWorkerThread(void *args) {
  */
 JNIEXPORT void JNICALL Java_com_ziv_threads_MainActivity_posixThreads
         (JNIEnv *env, jobject obj, jint threads, jint iterations) {
+    // 线程句柄
+    pthread_t* handles = new pthread_t[threads];
     for (int i = 0; i < threads; ++i) {
         NativeWorkerArgs *nativeWorkerArgs = new NativeWorkerArgs();
         nativeWorkerArgs->id = i;
         nativeWorkerArgs->iternation = iterations;
 
-        // 线程句柄
-        pthread_t thread;
         // 创建新线程
-        int result = pthread_create(&thread, NULL, nativeWorkerThread, (void *) nativeWorkerArgs);
+        int result = pthread_create(&handles[i], NULL, nativeWorkerThread, (void *) nativeWorkerArgs);
 
-        if (JNI_FALSE != result) {
+        if (0 != result) {
             // 抛出异常
             jclass exceptionClazz = env->FindClass(EXCEPTION_CLASS);
             env->ThrowNew(exceptionClazz, "Unable to find method.");
+            return;
+        }
+    }
+
+    // 等待线程结束
+    for (int i = 0; i < threads; ++i) {
+        void* result = NULL;
+        // 连接每个线程句柄
+        if (0 != pthread_join(handles[i], &result)) {
+            // 抛出异常
+            jclass exceptionClazz = env->FindClass(EXCEPTION_CLASS);
+            env->ThrowNew(exceptionClazz, "Unable to join thread.");
+        } else {
+            // 准备Message
+            char message[26];
+            sprintf(message, "Worker %d: Iteration %d", i, result);
+            jstring messageStr = env->NewStringUTF(message);
+            // 调用Java方法
+            env->CallVoidMethod(obj, nativeMessageMethod, messageStr);
+            // 是否产生异常检查
+            if (NULL != env->ExceptionOccurred()) {
+                return;
+            }
         }
     }
 }
