@@ -1,5 +1,6 @@
 #include <com_ziv_threads_MainActivity.h>
 #include "include/jni_log_util.h"
+#include "include/common.h"
 
 #include <stdio.h>
 #include <unistd.h>
@@ -20,6 +21,8 @@ static jmethodID nativeMessageMethod = NULL;
 static JavaVM *gVm = NULL;
 // Java对象的全局引用
 static jobject gObj = NULL;
+// 互斥实例
+static pthread_mutex_t mutex;
 
 jint JNI_OnLoad(JavaVM *vm, void *reserved) {
     // 缓存Java虚拟机
@@ -35,6 +38,11 @@ jint JNI_OnLoad(JavaVM *vm, void *reserved) {
  */
 JNIEXPORT void JNICALL Java_com_ziv_threads_MainActivity_nativeInit
         (JNIEnv *env, jobject obj) {
+    // 初始化互斥
+    if (0 != pthread_mutex_init(&mutex, NULL)) {
+        // 抛出异常
+        int result = throwNewException(env, "Unable to initialize mutex.");
+    }
     if (NULL == gObj) {
         gObj = env->NewGlobalRef(obj);
         if (NULL == gObj) {
@@ -48,8 +56,7 @@ JNIEXPORT void JNICALL Java_com_ziv_threads_MainActivity_nativeInit
         if (NULL == nativeMessageMethod) {
             LOGE("Native message method is not fount.");
             // 抛出异常
-            jclass exceptionClazz = env->FindClass(EXCEPTION_CLASS);
-            env->ThrowNew(exceptionClazz, "Unable to find method.");
+            int result = throwNewException(env, "Unable to find method.");
         }
     }
 }
@@ -135,8 +142,7 @@ JNIEXPORT void JNICALL Java_com_ziv_threads_MainActivity_posixThreads
 
         if (0 != result) {
             // 抛出异常
-            jclass exceptionClazz = env->FindClass(EXCEPTION_CLASS);
-            env->ThrowNew(exceptionClazz, "Unable to find method.");
+            int result = throwNewException(env, "Unable to find method.");
             return;
         }
     }
@@ -147,8 +153,7 @@ JNIEXPORT void JNICALL Java_com_ziv_threads_MainActivity_posixThreads
         // 连接每个线程句柄
         if (0 != pthread_join(handles[i], &result)) {
             // 抛出异常
-            jclass exceptionClazz = env->FindClass(EXCEPTION_CLASS);
-            env->ThrowNew(exceptionClazz, "Unable to join thread.");
+            int result = throwNewException(env, "Unable to join thread.");
         } else {
             // 准备Message
             char message[26];
