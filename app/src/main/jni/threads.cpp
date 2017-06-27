@@ -42,6 +42,7 @@ JNIEXPORT void JNICALL Java_com_ziv_threads_MainActivity_nativeInit
     if (0 != pthread_mutex_init(&mutex, NULL)) {
         // 抛出异常
         int result = throwNewException(env, "Unable to initialize mutex.");
+        return;
     }
     if (NULL == gObj) {
         gObj = env->NewGlobalRef(obj);
@@ -57,6 +58,7 @@ JNIEXPORT void JNICALL Java_com_ziv_threads_MainActivity_nativeInit
             LOGE("Native message method is not fount.");
             // 抛出异常
             int result = throwNewException(env, "Unable to find method.");
+            return;
         }
     }
 }
@@ -73,6 +75,10 @@ JNIEXPORT void JNICALL Java_com_ziv_threads_MainActivity_nativeFree
         env->DeleteGlobalRef(gObj);
         gObj = NULL;
     }
+
+    if (0 != pthread_mutex_destroy(&mutex)) {
+        int result = throwNewException(env, "Unable to destroy mutex.");
+    }
 }
 
 /*
@@ -82,6 +88,11 @@ JNIEXPORT void JNICALL Java_com_ziv_threads_MainActivity_nativeFree
  */
 JNIEXPORT void JNICALL Java_com_ziv_threads_MainActivity_nativeWorker
         (JNIEnv *env, jobject obj, jint id, jint iterations) {
+    if (0 != pthread_mutex_lock(&mutex)) {
+        int result = throwNewException(env, "Unable to lock mutex.");
+        return;
+    }
+
     for (int i = 0; i < iterations; ++i) {
         // 准备消息
         char message[26];
@@ -95,6 +106,10 @@ JNIEXPORT void JNICALL Java_com_ziv_threads_MainActivity_nativeWorker
         }
         // 睡眠1秒
         sleep(1);
+    }
+
+    if (0 != pthread_mutex_unlock(&mutex)) {
+        int result = throwNewException(env, "Unable to unlock mutex.");
     }
 }
 
